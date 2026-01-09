@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rono Swim Club | Member Portal</title>
+    <style>
+        :root {
+            --primary-blue: #0056b3;
+            --secondary-blue: #00a8e8;
+            --light-gray: #f4f4f9;
+            --dark-text: #333;
+            --white: #ffffff;
+            --admin-gold: #ffc107;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            line-height: 1.6;
+            color: var(--dark-text);
+            background-color: #fff;
+        }
+
+        nav {
+            background: var(--white);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--primary-blue); }
+
+        .hero {
+            background: linear-gradient(rgba(0, 86, 179, 0.7), rgba(0, 86, 179, 0.7)), 
+                        url('https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?auto=format&fit=crop&w=1350&q=80');
+            background-size: cover; height: 30vh; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center;
+        }
+
+        .section { padding: 40px 5%; text-align: center; }
+        .auth-container { max-width: 800px; margin: 0 auto; background: var(--light-gray); padding: 30px; border-radius: 15px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+
+        .btn {
+            background: var(--secondary-blue); color: white; padding: 12px 25px; border-radius: 50px; font-weight: bold; display: inline-block; border: none; cursor: pointer; transition: 0.3s;
+        }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Dashboard Styles */
+        #member-dashboard, #admin-panel { display: none; }
+        .session-card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid var(--primary-blue);
+            margin-bottom: 20px;
+        }
+        .session-count { font-size: 3.5rem; font-weight: bold; color: var(--primary-blue); display: block; }
+
+        /* Admin Table Styles */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 10px; overflow: hidden; }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+        th { background: #eee; }
+        .topup-btn { background: #28a745; font-size: 0.8rem; padding: 8px 15px; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">RONO SWIM CLUB</div>
+    </nav>
+
+    <section class="hero">
+        <h1>Portal Access</h1>
+        <p>Member Sessions & Club Management</p>
+    </section>
+
+    <section class="section">
+        <div class="auth-container">
+            
+            <div id="member-dashboard">
+                <h2 id="userDisplayName">Welcome Swimmer!</h2>
+                <div class="session-card">
+                    <small>SESSIONS REMAINING</small>
+                    <span class="session-count" id="sessionDisplay">--</span>
+                    <p id="attendanceMsg"></p>
+                </div>
+                <button id="markAttendanceBtn" class="btn" style="width:100%">Sign Attendance (-1 Session)</button>
+                <div style="text-align:center; margin-top:20px;">
+                    <button onclick="signOutUser()" style="background:none; border:none; color:red; cursor:pointer; text-decoration:underline;">Log Out</button>
+                </div>
+            </div>
+
+            <div id="admin-panel">
+                <h2 style="color: var(--primary-blue);">Club Administrator</h2>
+                <p>Managing live swimmer data</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Swimmer</th>
+                            <th>Sessions</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="swimmerList">
+                        </tbody>
+                </table>
+                <div style="text-align:center; margin-top:20px;">
+                    <button onclick="signOutUser()" class="btn" style="background:#666;">Exit Admin Mode</button>
+                </div>
+            </div>
+
+            <div id="signup-box">
+                <h3>New Swimmer Registration</h3>
+                <form id="registrationForm">
+                    <div class="form-group"><label>Full Name</label><input type="text" id="regName" required></div>
+                    <div class="form-group"><label>Phone</label><input type="tel" id="regPhone" required></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="regEmail" required></div>
+                    <div class="form-group"><label>Password</label><input type="password" id="regPass" required minlength="6"></div>
+                    <button type="submit" class="btn" style="width:100%">Create Account (Starts with 10 Sessions)</button>
+                </form>
+                <p style="text-align:center;">Already a member? <a href="javascript:void(0)" onclick="toggleView(true)">Sign In</a></p>
+            </div>
+
+            <div id="signin-box" style="display:none;">
+                <h3>Sign In</h3>
+                <form id="loginForm">
+                    <div class="form-group"><label>Email</label><input type="email" id="logEmail" required></div>
+                    <div class="form-group"><label>Password</label><input type="password" id="logPass" required></div>
+                    <button type="submit" class="btn" style="width:100%">Login</button>
+                </form>
+                <p style="text-align:center;">New swimmer? <a href="javascript:void(0)" onclick="toggleView(false)">Register</a></p>
+            </div>
+
+        </div>
+    </section>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZUjgF5BBxXvzmjYIU77uHcAdhgWtF9xo",
+            authDomain: "rono-swim-club.firebaseapp.com",
+            projectId: "rono-swim-club",
+            storageBucket: "rono-swim-club.firebasestorage.app",
+            messagingSenderId: "20948913866",
+            appId: "1:20948913866:web:ee04efa1bf8708a9ffae33",
+            measurementId: "G-63RKZREN4E"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const ADMIN_EMAIL = "krono.rsc@gmail.com";
+
+        // View Toggles
+        window.toggleView = (showLogin) => {
+            document.getElementById('signin-box').style.display = showLogin ? 'block' : 'none';
+            document.getElementById('signup-box').style.display = showLogin ? 'none' : 'block';
+        };
+
+        // Authentication Logic
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const res = await createUserWithEmailAndPassword(auth, regEmail.value, regPass.value);
+                await setDoc(doc(db, "users", res.user.uid), {
+                    name: regName.value,
+                    phone: regPhone.value,
+                    sessionsLeft: 10
+                });
+                alert("Account created! 10 sessions added.");
+            } catch (err) { alert(err.message); }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try { await signInWithEmailAndPassword(auth, logEmail.value, logPass.value); } 
+            catch (err) { alert(err.message); }
+        });
+
+        window.signOutUser = () => signOut(auth);
+
+        // Member Attendance
+        document.getElementById('markAttendanceBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('markAttendanceBtn');
+            btn.disabled = true;
+            try {
+                const userRef = doc(db, "users", auth.currentUser.uid);
+                const snap = await getDoc(userRef);
+                if (snap.data().sessionsLeft > 0) {
+                    await updateDoc(userRef, { sessionsLeft: increment(-1) });
+                    refreshData(auth.currentUser.uid);
+                } else { alert("No sessions left!"); }
+            } catch (err) { alert("Error: " + err.message); }
+        });
+
+        // Admin Table Loading
+        async function loadAdminDashboard() {
+            const list = document.getElementById('swimmerList');
+            list.innerHTML = "<tr><td colspan='3'>Syncing swimmers...</td></tr>";
+            const querySnapshot = await getDocs(collection(db, "users"));
+            list.innerHTML = "";
+            querySnapshot.forEach((uDoc) => {
+                const data = uDoc.data();
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${data.name}</td>
+                    <td><strong>${data.sessionsLeft}</strong></td>
+                    <td><button class="btn topup-btn" onclick="adminTopUp('${uDoc.id}')">+10 Sessions</button></td>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        window.adminTopUp = async (id) => {
+            await updateDoc(doc(db, "users", id), { sessionsLeft: increment(10) });
+            alert("Sessions added to member account.");
+            loadAdminDashboard();
+        };
+
+        // Data State Handler
+        async function refreshData(uid) {
+            const snap = await getDoc(doc(db, "users", uid));
+            if (snap.exists()) {
+                const data = snap.data();
+                document.getElementById('userDisplayName').innerText = "Hello, " + data.name;
+                document.getElementById('sessionDisplay').innerText = data.sessionsLeft;
+                const btn = document.getElementById('markAttendanceBtn');
+                if (data.sessionsLeft <= 0) {
+                    btn.disabled = true;
+                    btn.innerText = "No Sessions Remaining";
+                } else {
+                    btn.disabled = false;
+                    btn.innerText = "Sign Attendance (-1 Session)";
+                }
+            }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            const dash = document.getElementById('member-dashboard');
+            const admin = document.getElementById('admin-panel');
+            const sign = document.getElementById('signup-box');
+            const log = document.getElementById('signin-box');
+
+            if (user) {
+                sign.style.display = "none"; log.style.display = "none";
+                if (user.email === ADMIN_EMAIL) {
+                    admin.style.display = "block"; dash.style.display = "none";
+                    loadAdminDashboard();
+                } else {
+                    dash.style.display = "block"; admin.style.display = "none";
+                    refreshData(user.uid);
+                }
+            } else {
+                dash.style.display = "none"; admin.style.display = "none"; sign.style.display = "block";
+            }
+        });
+    </script>
+</body>
+</html>
